@@ -32,6 +32,7 @@ app.use((err,req,res,next)=>{
 
     return res.status(500).json({
         message:"Server Internal Error",
+        error:err,
         stack:err.stack
     })
 });
