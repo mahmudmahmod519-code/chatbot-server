@@ -4,7 +4,9 @@ require("dotenv").config();
 const chat=require("./router/chat");
 const user=require("./router/user");
 const logger=require("./middleware/logger");
-const rateLimit=require('./middleware/rateLimit')
+const rateLimit=require('./middleware/rateLimit');
+const cookieParser = require("cookie-parser");
+
 const app=express();
 
 //with web and app
@@ -13,6 +15,7 @@ app.use(cors({
     origin:process.env.FRONTEND,
 }));
 
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 

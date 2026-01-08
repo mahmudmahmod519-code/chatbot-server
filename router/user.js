@@ -17,7 +17,11 @@ router.post("/create-account",async(req,res)=>{
     const token=jwt.sign({id:user.id},process.env.Private_KEY);
 
     if(!process.env.FRONTEND.startsWith('app')){ 
-        res.cookie("token",token);
+        res.cookie("token",token,{
+            httpOnly: true,
+            secure: true,
+            sameSite: "lax",
+        });
         
         return res.status(201).json({message:'done add user',user})
     }
