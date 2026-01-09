@@ -4,8 +4,6 @@ const fs =require("fs");
 
 module.exports=(req,res,next)=>{
   
-  console.log(req.ip);
-  console.log(req.path)
   fs.appendFileSync(
       './log.txt',
       JSON.stringify({

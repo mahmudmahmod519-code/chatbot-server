@@ -1,6 +1,8 @@
 const express=require("express");
 const cors=require("cors");
+require("./deploying/instrument.js");
 require("dotenv").config();
+const Sentry = require("@sentry/node");
 const chat=require("./router/chat");
 const user=require("./router/user");
 const logger=require("./middleware/logger");
@@ -41,12 +43,14 @@ app.get('/logging',(req,res)=>{
     res.download('./log.txt')
 })
 
+Sentry.setupExpressErrorHandler(app);
 
 
 app.use((err,req,res,next)=>{
     console.log(err);
 
     return res.status(500).json({
+        sentry:res.sentry,
         message:"Server Internal Error",
         error:err,
         stack:err.stack
