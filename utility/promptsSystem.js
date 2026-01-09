@@ -408,7 +408,7 @@ function getSystemPrompt(context) {
         case 'interview':
         return systemPrompts.INTERVIEW;
             
-        case 'codeing':
+        case 'coding':
         return systemPrompts.CODING;
             
         case 'conversation':

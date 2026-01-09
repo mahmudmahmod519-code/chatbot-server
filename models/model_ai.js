@@ -7,7 +7,7 @@ async function main_model(promptUser,context,userid,image_url=undefined){
 
     let model=process.env.model_chat;
 
-    if(context==='codeing'||context==='interview')
+    if(context==='coding'||context==='interview')
         model=process.env.model_accuorcy;
     else if(context==='image')
         model=process.env.model_image;
@@ -62,7 +62,7 @@ async function text_model(model,promptUser,context,userid){
 
 
     const data=await res.json();
-      
+    
     if (!data.choices || !data.choices[0]) {
         throw new Error("Invalid API response");
     }
@@ -76,6 +76,9 @@ async function text_model(model,promptUser,context,userid){
         'role':'system',
         'content':data.choices[0].message.content,
     });
+
+    if(history.length>=15)
+        history.splice(0,parseInt(history.length/2));
 
     //update history
     db.prepare(

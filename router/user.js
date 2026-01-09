@@ -19,28 +19,20 @@ router.post("/create-account",async(req,res)=>{
     if(!process.env.FRONTEND.startsWith('app')){ 
         res.cookie("token",token,{
             httpOnly: true,
-            secure: false,
+            secure: true,
             sameSite: "lax",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
         });
-        
-        return res.status(201).json({message:'done add user',user})
+
+        return res.status(302).redirect('/chat')
+        // return res.status(201).json({message:'done add user',user})
     }
 
     return res.status(201).json({message:'done add user',user,token})
     
 });
 
-//temp
-router.delete('/',async(req,res)=>{
 
-    db.prepare(`DELETE FROM USER;'`).run();
-
-    return res.status(201).json({message:'done add user'})
-    
-});
-
-
-//temp
 router.post('/login',async(req,res)=>{
      const {username}=req.body;
     
@@ -55,9 +47,11 @@ router.post('/login',async(req,res)=>{
     if(!process.env.FRONTEND.startsWith('app')){ 
         res.cookie("token",token,{
             httpOnly: true,
-            secure: false,
+            secure: true,
             sameSite: "lax",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
         });
+        
         
         return res.status(201).json({message:'done add user',user})
     }

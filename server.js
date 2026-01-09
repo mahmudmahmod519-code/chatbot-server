@@ -17,6 +17,8 @@ app.use(cors({
     origin:process.env.FRONTEND,
 }));
 
+
+app.use(express.static('./public'))
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
@@ -24,8 +26,17 @@ app.use(express.urlencoded({extended:true}));
 
 app.use(logger,rateLimit);
 
-app.use('/chat',chat)
-app.use('/user',user)
+//view
+app.get('/',(req,res)=>{
+    return res.status(200).sendFile(__dirname+'/public/sign.html');
+});
+
+app.get('/chat',(req,res)=>{
+    return res.status(200).sendFile(__dirname+'/public/chat_model.html');
+});
+
+app.use('/api/chat',chat)
+app.use('/api/user',user)
 
 app.use((err,req,res,next)=>{
     console.log(err);

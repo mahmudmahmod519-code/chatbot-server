@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>User Registration</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark min-h-screen flex flex-col items-center justify-center p-6 transition-colors duration-300">
+<div class="w-full max-w-[480px] bg-white dark:bg-[#1c2127] rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+<!-- Header Section -->
+<div class="pt-10 pb-6 px-8 flex flex-col items-center text-center gap-4">
+<div class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+<span class="material-symbols-outlined text-primary text-3xl">smart_toy</span>
+</div>
+<div>
+<h1 class="text-slate-900 dark:text-white text-3xl font-black leading-tight tracking-[-0.033em]">
+                    Welcome to ChatBot
+                </h1>
+<p class="text-slate-500 dark:text-[#9dabb9] text-base font-normal leading-normal mt-2">
+                    Set up your profile to get started
+                </p>
+</div>
+</div>
+<!-- Form Section -->
+<div class="px-8 pb-8 flex flex-col gap-6">
+<!-- Username Input -->
+<div class="flex flex-col gap-2">
+<label class="text-slate-900 dark:text-white text-base font-medium leading-normal" for="username">
+                    Username
+                </label>
+<div class="relative">
+<input  class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 focus:border-primary border border-slate-200 dark:border-[#3b4754] bg-slate-50 dark:bg-[#111418] h-14 placeholder:text-slate-400 dark:placeholder:text-[#9dabb9] px-[15px] text-base font-normal leading-normal transition-all" id="username" placeholder="e.g., TechWizard99" type="text" value=""/>
+<div class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-[#9dabb9]">
+<span class="material-symbols-outlined text-xl">person</span>
+</div>
+</div>
+</div>
+<!-- Register Button -->
+<button onclick="submitData()" id="submit" class="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-5 bg-primary hover:bg-blue-600 text-white text-base font-bold leading-normal tracking-[0.015em] transition-colors shadow-sm hover:shadow-md">
+<span class="truncate">Register</span>
+<span class="material-symbols-outlined ml-2 text-xl">arrow_forward</span>
+</button>
+<!-- Helper Text -->
+<div class="pt-2">
+<p class="text-slate-400 dark:text-[#9dabb9] text-sm font-normal leading-normal text-center">
+                    Press <kbd class="font-sans px-1.5 py-0.5 rounded border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800 text-xs font-medium">Enter</kbd> to start
+                </p>
+</div>
+</div>
+<!-- Decorative bottom accent -->
+<div class="h-1.5 w-full bg-gradient-to-r from-primary/40 via-primary to-primary/40"></div>
+</div>
+</body>
+<script>
+    function submitData(){
+        const username=document.getElementById('username');
+
+        fetch('api/user/create-account',{
+            method:'POST',
+            headers:{
+                'Content-Type':'application/json'
+            },
+            credentials:"include",
+            body:JSON.stringify({
+                username: username.value
+            })
+        })
+        .then(res=>console.log(res.redirected))
+        .catch(err=>console.log(err));
+        window.location.replace('/chat');
+    }
+        
+</script>
+</html>

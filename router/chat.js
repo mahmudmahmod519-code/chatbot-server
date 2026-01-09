@@ -7,6 +7,8 @@ const upload=require('../middleware/uploadfiles');
 
 
 
+
+
 router.post('/',auth,upload.single("image"),async(req,res)=>{
     try{
 
@@ -33,6 +35,7 @@ router.post('/',auth,upload.single("image"),async(req,res)=>{
     
     const output=await main_model(prompt,context,req.user.id,image_url);
     
+
     return res.status(200).send(output);
     
     }catch(ex){

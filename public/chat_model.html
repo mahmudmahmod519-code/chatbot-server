@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Mossad AI Assistant</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .gradient-bg {
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .message-bubble {
+            border-radius: 1.125rem 1.125rem 1.125rem 0;
+            max-width: 70%;
+        }
+        .message-bubble.user {
+            border-radius: 1.125rem 1.125rem 0 1.125rem;
+        }
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            margin: 0 2px;
+            background-color: #9ca3af;
+            border-radius: 50%;
+            opacity: 0.6;
+            animation: typing 1.4s infinite both;
+        }
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+                opacity: 0.6;
+            }
+            30% {
+                transform: translateY(-10px);
+                opacity: 1;
+            }
+        }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .animate-fade-in-up {
+            animation: fadeInUp 0.5s ease-out;
+        }
+        .animate-pulse-slow {
+            animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+        .context-dropdown {
+            transition: all 0.2s ease;
+        }
+        .context-dropdown:hover .context-dropdown-content {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        .context-option {
+            transition: all 0.2s ease;
+        }
+        .context-option:hover {
+            transform: translateX(5px);
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#594ce6",
+                        "primary-light": "#7367f0",
+                        "primary-dark": "#4638d9",
+                        "background-light": "#f9fafb",
+                        "background-dark": "#0f172a",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1e293b",
+                        "border-light": "#e5e7eb",
+                        "border-dark": "#334155",
+                        "text-light": "#1f2937",
+                        "text-dark": "#f1f5f9",
+                        "input-bg-light": "#ffffff",
+                        "input-bg-dark": "#334155",
+                        "accent": "#10b981",
+                        "accent-light": "#34d399",
+                        "context-interview": "#8b5cf6",
+                        "context-coding": "#10b981",
+                        "context-conversation": "#3b82f6",
+                        "context-support": "#f59e0b",
+                        "context-auto": "#6b7280",
+                        "context-image": "#ec4899",
+                    },
+                    fontFamily: {
+                        display: ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.75rem",
+                        'pill': "9999px",
+                        'xl': "1rem",
+                        '2xl': "1.5rem",
+                        '3xl': "2rem",
+                    },
+                    boxShadow: {
+                        'soft': '0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04)',
+                        'medium': '0 4px 20px -3px rgba(0, 0, 0, 0.1), 0 10px 25px -5px rgba(0, 0, 0, 0.04)',
+                        'hard': '0 10px 40px -10px rgba(0, 0, 0, 0.2)',
+                    }
+                },
+            },
+        };
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark min-h-screen flex flex-col transition-colors duration-300">
+    <header class="sticky top-0 z-50 backdrop-blur-md bg-white/80 dark:bg-gray-900/80 border-b border-border-light dark:border-border-dark">
+        <div class="px-4 sm:px-6 lg:px-8 py-3">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="flex items-center justify-center h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-primary-light shadow-md">
+                        <span class="material-symbols-outlined text-white">smart_toy</span>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-800 dark:text-white">Mossad AI Assistant</h1>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Always ready to help</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button id="theme-toggle" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                        <span class="material-symbols-outlined dark:hidden">dark_mode</span>
+                        <span class="material-symbols-outlined hidden dark:inline">light_mode</span>
+                    </button>
+                    <div class="relative group">
+                        <button class="flex items-center space-x-2 px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                            <span class="text-sm font-medium text-gray-700 dark:text-gray-200">mossad M.</span>
+                            <span class="material-symbols-outlined text-gray-500 dark:text-gray-400 text-sm">expand_more</span>
+                        </button>
+                        <div class="absolute right-0 mt-2 w-48 bg-white dark:bg-surface-dark rounded-xl shadow-hard border border-border-light dark:border-border-dark opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                            <div class="py-2">
+                                <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                                    <span class="material-symbols-outlined mr-3 text-sm">account_circle</span>
+                                    Profile
+                                </a>
+                                <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                                    <span class="material-symbols-outlined mr-3 text-sm">settings</span>
+                                    Settings
+                                </a>
+                                <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                                    <span class="material-symbols-outlined mr-3 text-sm">help</span>
+                                    Help
+                                </a>
+                                <hr class="my-2 border-border-light dark:border-border-dark">
+                                <a href="#" class="flex items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-800">
+                                    <span class="material-symbols-outlined mr-3 text-sm">logout</span>
+                                    Sign Out
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow flex flex-col px-4 sm:px-6 lg:px-8 w-full max-w-6xl mx-auto py-8">
+        <!-- Welcome section -->
+        <div class="text-center mb-12 animate-fade-in-up">
+            <h1 class="text-4xl sm:text-5xl font-bold mb-4 text-gray-800 dark:text-white">
+                How can I assist you today?
+            </h1>
+            <p class="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+                I'm your AI assistant ready to help with any task. Ask me anything or choose a suggestion below.
+            </p>
+        </div>
+
+        <!-- Chat container -->
+        <div class="flex-grow flex flex-col w-full max-w-4xl mx-auto mb-8">
+            <!-- Chat messages container -->
+            <div id="chat-container" class="flex-grow rounded-2xl bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark shadow-soft p-4 sm:p-6 mb-6 overflow-y-auto max-h-[400px]">
+                <!-- Welcome message -->
+                <div class="flex items-start mb-6">
+                    <div class="flex-shrink-0 mr-3">
+                        <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-primary-light flex items-center justify-center shadow-sm">
+                            <span class="material-symbols-outlined text-white text-sm">smart_toy</span>
+                        </div>
+                    </div>
+                    <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded-2xl rounded-tl-none message-bubble">
+                        <p class="text-gray-800 dark:text-gray-200">Hello! I'm your Mossad AI assistant. I can help you with writing, analysis, coding, research, and much more. What would you like to work on today?</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Just now</p>
+                    </div>
+                </div>
+
+                <!-- Typing indicator -->
+                <div id="typing-indicator" class="flex items-start mb-6 hidden">
+                    <div class="flex-shrink-0 mr-3">
+                        <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-primary-light flex items-center justify-center shadow-sm">
+                            <span class="material-symbols-outlined text-white text-sm">smart_toy</span>
+                        </div>
+                    </div>
+                    <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded-2xl rounded-tl-none message-bubble">
+                        <div class="typing-indicator">
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Context selection and Input area -->
+            <form id="chat-form" class="w-full relative group">
+                <!-- Context selector -->
+                <div id="context-selector" class="mb-3 flex items-center space-x-2">
+                    <span class="text-sm text-gray-600 dark:text-gray-400">Mode:</span>
+                    <div class="relative context-dropdown">
+                        <button type="button" id="context-button" class="flex items-center space-x-1 px-3 py-1.5 text-sm bg-gradient-to-r from-context-conversation to-context-conversation/80 text-white rounded-full shadow-sm hover:opacity-90 transition-opacity">
+                            <span id="context-icon" class="material-symbols-outlined text-sm">chat</span>
+                            <span id="context-label">Conversation</span>
+                            <span class="material-symbols-outlined text-sm">expand_more</span>
+                        </button>
+                        <div class="context-dropdown-content absolute top-full left-0 mt-2 w-64 bg-white dark:bg-surface-dark rounded-xl shadow-hard border border-border-light dark:border-border-dark opacity-0 invisible transition-all duration-200 z-40 transform -translate-y-2">
+                            <div class="p-2">
+                                <div class="text-xs font-medium text-gray-500 dark:text-gray-400 px-3 py-2 mb-1">Select Context Mode</div>
+                                <div class="space-y-1">
+                                    <button type="button" data-context="conversation" data-icon="chat" class="context-option flex items-center w-full px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
+                                        <span class="material-symbols-outlined mr-2 text-sm text-context-conversation">chat</span>
+                                        <div class="flex-grow text-left">
+                                            <div>Conversation</div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400">General chat and discussion</div>
+                                        </div>
+                                        <span id="current-context-check-conversation" class="material-symbols-outlined text-primary text-sm hidden">check</span>
+                                    </button>
+                                    <button type="button" data-context="coding" data-icon="code" class="context-option flex items-center w-full px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
+                                        <span class="material-symbols-outlined mr-2 text-sm text-context-coding">code</span>
+                                        <div class="flex-grow text-left">
+                                            <div>Coding</div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400">Programming and debugging</div>
+                                        </div>
+                                        <span id="current-context-check-coding" class="material-symbols-outlined text-primary text-sm hidden">check</span>
+                                    </button>
+                                    <button type="button" data-context="interview" data-icon="question_answer" class="context-option flex items-center w-full px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
+                                        <span class="material-symbols-outlined mr-2 text-sm text-context-interview">question_answer</span>
+                                        <div class="flex-grow text-left">
+                                            <div>Interview</div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400">Interview preparation and questions</div>
+                                        </div>
+                                        <span id="current-context-check-interview" class="material-symbols-outlined text-primary text-sm hidden">check</span>
+                                    </button>
+                                    <button type="button" data-context="support" data-icon="support_agent" class="context-option flex items-center w-full px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
+                                        <span class="material-symbols-outlined mr-2 text-sm text-context-support">support_agent</span>
+                                        <div class="flex-grow text-left">
+                                            <div>Support</div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400">Technical support and help</div>
+                                        </div>
+                                        <span id="current-context-check-support" class="material-symbols-outlined text-primary text-sm hidden">check</span>
+                                    </button>
+                                    <button type="button" data-context="auto" data-icon="auto_awesome" class="context-option flex items-center w-full px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
+                                        <span class="material-symbols-outlined mr-2 text-sm text-context-auto">auto_awesome</span>
+                                        <div class="flex-grow text-left">
+                                            <div>Auto</div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400">Automatic context detection</div>
+                                        </div>
+                                        <span id="current-context-check-auto" class="material-symbols-outlined text-primary text-sm hidden">check</span>
+                                    </button>
+                                    <button type="button" data-context="image" data-icon="image" class="context-option flex items-center w-full px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
+                                        <span class="material-symbols-outlined mr-2 text-sm text-context-image">image</span>
+                                        <div class="flex-grow text-left">
+                                            <div>Image</div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400">Image analysis and description</div>
+                                        </div>
+                                        <span id="current-context-check-image" class="material-symbols-outlined text-primary text-sm hidden">check</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" id="selected-context" name="context" value="conversation">
+                    <input type="hidden" id="selected-icon" name="icon" value="chat">
+                </div>
+
+                <!-- Input area -->
+                <div class="relative flex items-center bg-input-bg-light dark:bg-input-bg-dark border-2 border-border-light dark:border-border-dark shadow-medium group-focus-within:shadow-hard group-focus-within:border-primary rounded-2xl overflow-hidden transition-all duration-300 py-3 px-4">
+                    <!-- File upload button (replaces add button) -->
+                    <label for="image-upload" class="cursor-pointer p-2 mr-2 text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary-light hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors flex items-center justify-center h-10 w-10 shrink-0">
+                        <span class="material-symbols-outlined">upload</span>
+                        <input type="file" id="image-upload" name="image" accept="image/*" class="hidden">
+                    </label>
+                    
+                    <textarea id="message-input" name="prompt" class="w-full bg-transparent border-none text-gray-800 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-0 resize-none py-2 max-h-48 overflow-y-auto leading-relaxed" placeholder="Ask anything..." rows="1" style="min-height: 44px;"></textarea>
+                    
+                    <div class="flex items-center space-x-2 shrink-0 ml-2">
+                        <div id="selected-file-info" class="hidden mr-2">
+                            <span class="text-xs text-primary dark:text-primary-light bg-primary/10 dark:bg-primary/20 px-2 py-1 rounded-full flex items-center">
+                                <span class="material-symbols-outlined text-xs mr-1">image</span>
+                                Image selected
+                            </span>
+                        </div>
+                        <button id="send-btn" type="submit" class="p-2 bg-gradient-to-r from-primary to-primary-light text-white rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center h-10 w-10 shadow-md">
+                            <span class="material-symbols-outlined">send</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between mt-3 px-2">
+                    <div class="flex items-center space-x-4">
+                        <span class="text-xs text-gray-500 dark:text-gray-400">Press <kbd class="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded text-xs">Enter</kbd> to send</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span id="connection-status" class="text-xs text-gray-500 dark:text-gray-400">AI is online</span>
+                        <span id="connection-indicator" class="h-2 w-2 rounded-full bg-green-500 animate-pulse-slow"></span>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <footer class="border-t border-border-light dark:border-border-dark py-4 mt-8">
+        <div class="px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
+            <p class="text-xs text-center text-gray-500 dark:text-gray-400">
+                Mossad AI Assistant • AI can make mistakes. Consider checking important information.
+            </p>
+            <div class="flex items-center justify-center mt-2 space-x-6">
+                <a href="#" class="text-xs text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary-light transition-colors">Privacy Policy</a>
+                <a href="#" class="text-xs text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary-light transition-colors">Terms of Service</a>
+                <a href="#" class="text-xs text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary-light transition-colors">Help Center</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Theme toggle
+        const themeToggle = document.getElementById('theme-toggle');
+        themeToggle.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+        });
+
+        // Auto-resize textarea
+        const textarea = document.getElementById('message-input');
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+
+        // Context selection
+        let currentContext = 'conversation';
+        let selectedFile = null;
+
+        // Context colors mapping
+        const contextColors = {
+            'conversation': 'from-context-conversation to-context-conversation/80',
+            'coding': 'from-context-coding to-context-coding/80',
+            'interview': 'from-context-interview to-context-interview/80',
+            'support': 'from-context-support to-context-support/80',
+            'auto': 'from-context-auto to-context-auto/80',
+            'image': 'from-context-image to-context-image/80'
+        };
+
+        const contextIcons = {
+            'conversation': 'chat',
+            'coding': 'code',
+            'interview': 'question_answer',
+            'support': 'support_agent',
+            'auto': 'auto_awesome',
+            'image': 'image'
+        };
+
+        const contextLabels = {
+            'conversation': 'Conversation',
+            'coding': 'Coding',
+            'interview': 'Interview',
+            'support': 'Support',
+            'auto': 'Auto',
+            'image': 'Image'
+        };
+
+        // Set initial context
+        function setContext(context) {
+            currentContext = context;
+            
+            // Update button
+            const contextButton = document.getElementById('context-button');
+            const contextIcon = document.getElementById('context-icon');
+            const contextLabel = document.getElementById('context-label');
+            const selectedContextInput = document.getElementById('selected-context');
+            const selectedIconInput = document.getElementById('selected-icon');
+            
+            // Remove all color classes
+            Object.values(contextColors).forEach(colorClass => {
+                contextButton.classList.remove(...colorClass.split(' '));
+            });
+            
+            // Add new color class
+            contextButton.classList.add(...contextColors[context].split(' '));
+            contextIcon.textContent = contextIcons[context];
+            contextLabel.textContent = contextLabels[context];
+            selectedContextInput.value = context;
+            selectedIconInput.value = contextIcons[context];
+            
+            // Update checkmarks
+            document.querySelectorAll('[id^="current-context-check-"]').forEach(check => {
+                check.classList.add('hidden');
+            });
+            document.getElementById(`current-context-check-${context}`).classList.remove('hidden');
+            
+            // If image context is selected, show file info
+            if (context === 'image') {
+                document.getElementById('selected-file-info').classList.remove('hidden');
+                if (!selectedFile) {
+                    document.getElementById('image-upload').click();
+                }
+            } else {
+                document.getElementById('selected-file-info').classList.add('hidden');
+            }
+        }
+
+        // Initialize context dropdown
+        document.querySelectorAll('.context-option').forEach(option => {
+            option.addEventListener('click', () => {
+                const context = option.getAttribute('data-context');
+                setContext(context);
+            });
+        });
+
+        // File upload handling
+        document.getElementById('image-upload').addEventListener('change', function(e) {
+            if (this.files && this.files[0]) {
+                selectedFile = this.files[0];
+                document.getElementById('selected-file-info').classList.remove('hidden');
+                
+                // Auto-switch to image context if not already
+                if (currentContext !== 'image') {
+                    setContext('image');
+                }
+            }
+        });
+
+        // API Configuration
+        // const API_BASE_URL = 'https://chatbot-mossad.cleverapps.io/api/chat';
+        const API_BASE_URL = '/api/chat';
+
+        // Send message functionality
+        const sendBtn = document.getElementById('send-btn');
+        const messageInput = document.getElementById('message-input');
+        const chatContainer = document.getElementById('chat-container');
+        const typingIndicator = document.getElementById('typing-indicator');
+        const chatForm = document.getElementById('chat-form');
+
+        function addMessage(message, isUser = true, isError = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `flex items-start mb-6 ${isUser ? 'justify-end' : ''}`;
+            
+            const avatarDiv = document.createElement('div');
+            avatarDiv.className = `flex-shrink-0 ${isUser ? 'ml-3' : 'mr-3'}`;
+            
+            const avatarInner = document.createElement('div');
+            avatarInner.className = `h-10 w-10 rounded-xl flex items-center justify-center shadow-sm ${isUser ? 'bg-gradient-to-br from-accent to-accent-light' : 'bg-gradient-to-br from-primary to-primary-light'}`;
+            
+            const avatarIcon = document.createElement('span');
+            avatarIcon.className = 'material-symbols-outlined text-white text-sm';
+            avatarIcon.textContent = isUser ? 'person' : 'smart_toy';
+            
+            avatarInner.appendChild(avatarIcon);
+            avatarDiv.appendChild(avatarInner);
+            
+            const bubbleDiv = document.createElement('div');
+            if (isError) {
+                bubbleDiv.className = 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 p-4 rounded-2xl rounded-tl-none message-bubble max-w-[80%]';
+            } else {
+                bubbleDiv.className = `${isUser ? 'bg-gradient-to-r from-primary to-primary-light text-white rounded-2xl rounded-tr-none' : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-2xl rounded-tl-none'} p-4 message-bubble max-w-[80%]`;
+            }
+            
+            const messageText = document.createElement('p');
+            messageText.innerHTML = marked.parse(message);
+            
+            const timeText = document.createElement('p');
+            timeText.className = `text-xs mt-2 ${isUser ? 'text-white/70' : 'text-gray-500 dark:text-gray-400'}`;
+            const now = new Date();
+            timeText.textContent = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            bubbleDiv.appendChild(messageText);
+            bubbleDiv.appendChild(timeText);
+            
+            if (isUser) {
+                messageDiv.appendChild(bubbleDiv);
+                messageDiv.appendChild(avatarDiv);
+            } else {
+                messageDiv.appendChild(avatarDiv);
+                messageDiv.appendChild(bubbleDiv);
+            }
+            
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        async function sendToAPI(prompt, context, file = null) {
+            try {
+                const formData = new FormData();
+                formData.append('prompt', prompt);
+                formData.append('context', context);
+                
+                if (file && currentContext === 'image') {
+                    formData.append('image', file);
+                }
+
+                const response = await fetch(`${API_BASE_URL}`, {
+                    method: 'POST',
+                    credentials:'include',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API error: ${response.status} ${(await response.json()).message}`);
+                }
+
+                const data = await response.text();
+                return data;
+            } catch (error) {
+                console.error('Error sending message to API:', error);
+                throw error;
+            }
+        }
+
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const message = messageInput.value.trim();
+            if (!message && !selectedFile && currentContext !== 'image') {
+                return;
+            }
+
+            // Add user message
+            if (message) {
+                addMessage(message, true);
+            } else if (selectedFile) {
+                addMessage(`[Image: ${selectedFile.name}]`, true);
+            }
+            
+            // Clear input
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+            
+            // Show typing indicator
+            typingIndicator.classList.remove('hidden');
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            try {
+                // Send to API
+                const response = await sendToAPI(message || "Analyze the image", currentContext, selectedFile);
+                
+                // Hide typing indicator
+                typingIndicator.classList.add('hidden');
+                
+                // Add AI response
+                if (response || response.message) {
+                    addMessage(response?.message||response, false);
+                } else {
+                    addMessage("I've processed your request. Here's what I found.", false);
+                }
+                
+                // Reset file if not in image mode
+                if (currentContext !== 'image') {
+                    selectedFile = null;
+                    document.getElementById('image-upload').value = '';
+                    document.getElementById('selected-file-info').classList.add('hidden');
+                }
+                
+            } catch (error) {
+                // Hide typing indicator
+                typingIndicator.classList.add('hidden');
+                
+                // Show error message
+                addMessage(`Error: ${error.message}. Please check your connection and try again.`, false, true);
+                
+            }
+        });
+
+        // Quick suggestion buttons (if you have them)
+        const suggestionButtons = document.querySelectorAll('.card-hover');
+        suggestionButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const suggestionTitle = button.querySelector('h3').textContent;
+                const suggestions = {
+                    "Write & Edit": "Can you help me write a professional email to a client?",
+                    "Code & Debug": "How can I fix this JavaScript error: 'Uncaught TypeError: Cannot read properties of undefined'?",
+                    "Brainstorm": "I need ideas for a new mobile app that helps people track their daily water intake.",
+                    "Summarize": "Can you summarize the key points of quantum computing for a beginner?"
+                };
+                
+                if (suggestions[suggestionTitle]) {
+                    messageInput.value = suggestions[suggestionTitle];
+                    messageInput.dispatchEvent(new Event('input'));
+                    messageInput.focus();
+                }
+            });
+        });
+
+        // Enter key to send (without shift)
+        messageInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendBtn.click();
+            }
+        });
+
+        // Initialize
+        setContext('conversation');
+    </script>
+</body>
+</html>
