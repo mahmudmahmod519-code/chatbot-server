@@ -37,6 +37,11 @@ app.get('/chat',(req,res)=>{
 
 app.use('/api/chat',chat)
 app.use('/api/user',user)
+app.get('/logging',(req,res)=>{
+    res.download('./log.txt')
+})
+
+
 
 app.use((err,req,res,next)=>{
     console.log(err);
