@@ -1,11 +1,9 @@
 const router=require('express').Router()
-const db = require('../database/modelDatabase');
 const auth = require('../middleware/auth');
 const { validationMessage } = require('../utility/validation');
 const main_model = require('../models/model_ai');
 const upload=require('../middleware/uploadfiles');
-
-
+const query=require("../utility/createQuerey");
 
 
 
@@ -24,15 +22,16 @@ router.post('/',auth,upload.single("image"),async(req,res)=>{
     const {error}=validationMessage(req.body);
     if(error)return res.status(400).json({message:error.details[0].message});
 
-    const user=db.prepare(`SELECT * FROM USER WHERE id=?`).get(req.user.id);
-
-    if(!user)return res.status(404).json({message:"sorry not found account"});
-
-    const history=db.prepare(`SELECT id FROM HISTORY WHERE user_id=?`).get(req.user.id);
-
-    if(!history)
-        db.exec(`INSERT INTO HISTORY(user_id,chat,type_context)VALUES (${req.user.id},'[]','${context}')`);
+    const users=await query(`SELECT * FROM USER WHERE id=?`,[req.user.id]);
     
+    if(users.length===0||!users)return res.status(404).json({message:"sorry not found account"});
+
+
+    const history=await query(`SELECT id FROM HISTORY WHERE user_id=?`,[req.user.id])
+    
+    if(history.length===0||!history)
+        await query(`INSERT INTO HISTORY(user_id,chat,type_context)VALUES (?,'[]',?)`,[req.user.id,context]);
+
     const output=await main_model(prompt,context,req.user.id,image_url);
     
 

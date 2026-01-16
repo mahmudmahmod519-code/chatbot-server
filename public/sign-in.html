@@ -51,6 +51,7 @@
 </div>
 <!-- Form Section -->
 <div class="px-8 pb-8 flex flex-col gap-6">
+    
 <!-- Username Input -->
 <div class="flex flex-col gap-2">
 <label class="text-slate-900 dark:text-white text-base font-medium leading-normal" for="username">
@@ -63,6 +64,20 @@
 </div>
 </div>
 </div>
+
+<!-- password Input -->
+<div class="flex flex-col gap-2">
+<label class="text-slate-900 dark:text-white text-base font-medium leading-normal" for="password">
+                    Password
+                </label>
+<div class="relative">
+<input  class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 focus:border-primary border border-slate-200 dark:border-[#3b4754] bg-slate-50 dark:bg-[#111418] h-14 placeholder:text-slate-400 dark:placeholder:text-[#9dabb9] px-[15px] text-base font-normal leading-normal transition-all" id="password" placeholder="e.g., TechWizard99" type="password" value=""/>
+<!-- <div class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-[#9dabb9]">
+<span class="material-symbols-outlined text-xl">person</span>
+</div> -->
+</div>
+</div>
+
 <!-- Register Button -->
 <button onclick="submitData()" id="submit" class="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-5 bg-primary hover:bg-blue-600 text-white text-base font-bold leading-normal tracking-[0.015em] transition-colors shadow-sm hover:shadow-md">
 <span class="truncate">Register</span>
@@ -82,20 +97,27 @@
 <script>
     function submitData(){
         const username=document.getElementById('username');
+        const password=document.getElementById('password');
 
-        fetch('api/user/create-account',{
+        fetch('api/user/login',{
             method:'POST',
             headers:{
                 'Content-Type':'application/json'
             },
             credentials:"include",
             body:JSON.stringify({
-                username: username.value
+                username: username.value,
+                password:password.value
             })
         })
-        .then(res=>console.log(res.redirected))
-        .catch(err=>console.log(err));
-        window.location.replace('/chat');
+        .then(res=>{
+            console.log(res.redirected)
+            window.location.replace('/chat');
+        })
+        .catch(err=>{
+            console.log(err)
+            window.location.replace('/');
+        });
     }
         
 </script>

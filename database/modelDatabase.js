@@ -1,24 +1,44 @@
-const sqllite=require('node:sqlite');
-
-let database=new sqllite.DatabaseSync('./database/chat.sqlite')
+const mysql = require('mysql2');
 
 
-database.exec(`
-      CREATE TABLE IF NOT EXISTS HISTORY(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER,
-        chat TEXT,
-        type_context TEXT,
-        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES USER(id) ON DELETE CASCADE
-    );
-    
-    CREATE TABLE IF NOT EXISTS USER(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT UNIQUE,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    );
+const sql=`
+CREATE TABLE IF NOT EXISTS USER(
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(225) UNIQUE,
+    email VARCHAR(225) UNIQUE NOT NULL,
+    phone VARCHAR(225) UNIQUE NOT NULL,
+    password VARCHAR(225) NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
 
-`);
+CREATE TABLE IF NOT EXISTS HISTORY(
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    chat TEXT,
+    type_context TEXT,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES USER(id) ON DELETE CASCADE
+);
 
-module.exports=database
+
+`;
+
+
+const pool=mysql.createPool({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASS,
+    port: process.env.DB_PORT,
+    database:process.env.DB_NAME,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0,
+    multipleStatements: true
+})
+
+pool.query(sql, (err, results) => {
+    if(err) console.log(err);
+    else console.log("Tables created or already exist");
+});
+
+module.exports=pool;

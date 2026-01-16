@@ -1,6 +1,5 @@
-const db=require("../database/modelDatabase");
 const getSystemPrompt = require("../utility/promptsSystem");
-
+const query=require("../utility/createQuerey");
 
 
 async function main_model(promptUser,context,userid,image_url=undefined){
@@ -23,14 +22,14 @@ async function main_model(promptUser,context,userid,image_url=undefined){
 
 async function text_model(model,promptUser,context,userid){
     try{
-    
-    let messages=db.prepare(`SELECT * FROM HISTORY WHERE user_id=?`).get(userid)
- 
     let body=[];
- 
-    const systemPrompt = getSystemPrompt(context);
     
+    const [messages]=await query(`SELECT * FROM HISTORY WHERE user_id=?`,[userid]);
+
     const history=JSON.parse(messages.chat);
+
+    
+    const systemPrompt = getSystemPrompt(context);
     
     if(history.length>0)
         body.push(...history)
@@ -40,6 +39,9 @@ async function text_model(model,promptUser,context,userid){
             'content':systemPrompt
         });
     }
+ 
+ 
+    
         
     body.push({
           "role": "user",
@@ -81,9 +83,9 @@ async function text_model(model,promptUser,context,userid){
         history.splice(0,parseInt(history.length/2));
 
     //update history
-    db.prepare(
+    await query(
       `UPDATE HISTORY SET chat=? WHERE user_id=?`
-    ).run(JSON.stringify(history), userid);
+    ,[JSON.stringify(history), userid]);
     
     return data.choices[0].message.content;
     
