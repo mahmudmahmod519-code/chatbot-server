@@ -44,8 +44,9 @@ app.get('/chat',(req,res)=>{
 app.use('/api/chat',chat)
 app.use('/api/user',user)
 app.get('/logging',(req,res)=>{
-    res.download('./log.txt')
+    res.download('./upload')
 })
+
 
 const fs=require('fs');
 app.delete("/",(req,res)=>{
