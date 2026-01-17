@@ -25,11 +25,12 @@ CREATE TABLE IF NOT EXISTS HISTORY(
 
 
 const pool=mysql.createPool({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASS,
-    port: process.env.DB_PORT,
-    database:process.env.DB_NAME,
+    host: process.env.MYSQL_ADDON_HOST,
+    user: process.env.MYSQL_ADDON_USER,
+    password: process.env.MYSQL_ADDON_PASSWORD,
+    port: process.env.MYSQL_ADDON_PORT,
+    database:process.env.MYSQL_ADDON_DB,
+    uri:process.env.MYSQL_ADDON_URI,
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0,
