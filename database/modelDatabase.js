@@ -30,7 +30,7 @@ const pool=mysql.createPool({
     password: process.env.MYSQL_ADDON_PASSWORD,
     port: process.env.MYSQL_ADDON_PORT,
     database:process.env.MYSQL_ADDON_DB,
-    uri:process.env.MYSQL_ADDON_URI,
+    // uri:process.env.MYSQL_ADDON_URI,
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0,
