@@ -509,8 +509,6 @@
                 bubbleDiv.className = `${isUser ? 'bg-gradient-to-r from-primary to-primary-light text-white rounded-2xl rounded-tr-none' : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-2xl rounded-tl-none'} p-4 message-bubble max-w-[80%]`;
             }
             
-            console.log(`1: ${message}`)
-
             const messageText = document.createElement('p');
             messageText.innerHTML = marked.parse(message);
             
@@ -593,8 +591,6 @@
                 // Hide typing indicator
                 typingIndicator.classList.add('hidden');
                 
-                console.log(`2: ${response}`)
-
                 // Add AI response
                 if (response || response.text) {
                     addMessage(response?.text||response, false);
