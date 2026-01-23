@@ -27,8 +27,20 @@ app.use(express.urlencoded({extended:true}));
 app.use(logger,rateLimit);
 
 //view
-require('./utility/view')(app);
+app.get('/',(req,res)=>{
+    return res.status(200).sendFile(__dirname+'/public/sign-up.html');
+});
 
+app.get('/login',(req,res)=>{
+    return res.status(200).sendFile(__dirname+'/public/sign-in.html');
+});
+
+app.get('/chat',(req,res)=>{
+    return res.status(200).sendFile(__dirname+'/public/chat_model.html');
+});
+app.get('/error',(req,res)=>{
+    return res.status(200).sendFile(__dirname+'/public/error.html')
+});
 
 app.use('/api/chat',chat)
 app.use('/api/user',user)
