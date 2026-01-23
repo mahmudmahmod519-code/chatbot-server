@@ -27,26 +27,11 @@ app.use(express.urlencoded({extended:true}));
 app.use(logger,rateLimit);
 
 //view
-app.get('/',(req,res)=>{
-    return res.status(200).sendFile(__dirname+'/public/sign-up.html');
-});
-
-app.get('/login',(req,res)=>{
-    return res.status(200).sendFile(__dirname+'/public/sign-in.html');
-});
-
-app.get('/chat',(req,res)=>{
-    return res.status(200).sendFile(__dirname+'/public/chat_model.html');
-});
-
+require('./utility/view')(app);
 
 
 app.use('/api/chat',chat)
 app.use('/api/user',user)
-app.get('/logging',(req,res)=>{
-    res.download('./upload')
-})
-
 
 const fs=require('fs');
 app.delete("/",(req,res)=>{
@@ -64,14 +49,8 @@ app.delete("/",(req,res)=>{
 
 
 app.use((err,req,res,next)=>{
-    console.log(err);
-    
-
-    return res.status(500).json({
-        message:"Server Internal Error",
-        error:err,
-        stack:err.stack
-    })
+    console.log(err); 
+    return res.status(302).redirect('/error')
 });
 
 

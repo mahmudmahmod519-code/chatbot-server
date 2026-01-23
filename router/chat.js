@@ -39,9 +39,7 @@ router.post('/',auth,upload.single("image"),async(req,res)=>{
     
     }catch(ex){
         console.log(ex);
-        res.status(500).json({
-            message:"Server Internal Error",
-        });
+        res.status(302).redirect('/error');
     }
 
 });
