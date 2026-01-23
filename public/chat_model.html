@@ -512,6 +512,8 @@
             const messageText = document.createElement('p');
             messageText.innerHTML = marked.parse(message);
             
+            console.log(messageText);
+            
             const timeText = document.createElement('p');
             timeText.className = `text-xs mt-2 ${isUser ? 'text-white/70' : 'text-gray-500 dark:text-gray-400'}`;
             const now = new Date();
@@ -553,6 +555,7 @@
                 }
 
                 const data = await response.text();
+                console.log(data);
                 return data;
             } catch (error) {
                 console.error('Error sending message to API:', error);
@@ -590,9 +593,11 @@
                 // Hide typing indicator
                 typingIndicator.classList.add('hidden');
                 
+                console.log(response);
+
                 // Add AI response
-                if (response || response.message) {
-                    addMessage(response?.message||response, false);
+                if (response || response.text) {
+                    addMessage(response?.text||response, false);
                 } else {
                     addMessage("I've processed your request. Here's what I found.", false);
                 }
